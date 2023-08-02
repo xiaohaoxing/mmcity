@@ -16,7 +16,7 @@ import java.util.Collection;
 public class Arango implements Database, ArangoConfiguration {
     @Override
     public ArangoDB.Builder arango() {
-        return new ArangoDB.Builder().host("academicis.fun", 38529).user("root").password("123123");
+        return new ArangoDB.Builder().host("localhost", 8529).user("root").password("123123");
     }
 
     @Override
@@ -29,7 +29,7 @@ public class Arango implements Database, ArangoConfiguration {
 
     }
 
-    public static void main(String[] args) {
+    public static void test(String[] args) {
         String dbName = "demo";
         String colName = "gtfs";
         String docKey = "nyc";
