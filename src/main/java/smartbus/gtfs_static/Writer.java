@@ -19,11 +19,14 @@ public class Writer {
         }
     }
 
-    public void addCollection(String name) {
+    public void addCollection(String name, boolean shouldDrop) {
         Collection<CollectionEntity> cols = conn.db(DATABASE_NAME).getCollections();
-        if (!cols.stream().anyMatch(col -> col.getName().equals(name))) {
-            conn.db(DATABASE_NAME).createCollection(name);
+        if (shouldDrop && cols.stream().anyMatch(col -> col.getName().equals(name))) {
+            conn.db(DATABASE_NAME).collection(name).drop();
         }
+//        if (!cols.stream().anyMatch(col -> col.getName().equals(name))) {
+        conn.db(DATABASE_NAME).createCollection(name);
+//        }
     }
 
     public void addDocument(String collection, BaseDocument doc) {

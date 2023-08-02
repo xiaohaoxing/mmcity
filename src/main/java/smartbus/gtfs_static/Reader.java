@@ -4,9 +4,9 @@ import java.sql.*;
 import java.util.*;
 
 public class Reader {
-    private static final String stop_table = "real_time_data_temp";
+    private static final List<String> STOP_TABLES = Arrays.asList("real_time_data_temp", "current", "status", "sys_config","shapes");
 
-    private Connection conn;
+    private final Connection conn;
 
     public Reader(String url) throws Exception {
         Class.forName("com.mysql.jdbc.Driver").newInstance();
@@ -18,13 +18,13 @@ public class Reader {
         ResultSet tableMetas = metaData.getTables(null, "%", "%", new String[]{"TABLE"});
         List<String> importTables = new ArrayList<>();
         while (tableMetas.next()) {
-            if (!tableMetas.getString("TABLE_NAME").equals(stop_table)) {
+            if (!STOP_TABLES.contains(tableMetas.getString("TABLE_NAME"))) {
                 importTables.add(tableMetas.getString("TABLE_NAME"));
             }
         }
         List<DbTable> tables = new ArrayList<>();
-        for (int i = 0; i < importTables.size(); i++) {
-            tables.add(readTableSchema(importTables.get(i), metaData));
+        for (String importTable : importTables) {
+            tables.add(readTableSchema(importTable, metaData));
         }
         return tables;
     }
@@ -50,7 +50,7 @@ public class Reader {
         while (pks.next()) {
             String col = pks.getString("COLUMN_NAME");
             short seq = pks.getShort("KEY_SEQ");
-            primaryKeyArray[seq-1] = col;
+            primaryKeyArray[seq - 1] = col;
         }
         DbTable table = new DbTable(tableName, columns);
         table.setPrimaryKey(List.of(primaryKeyArray));
@@ -58,7 +58,7 @@ public class Reader {
     }
 
     public int getTableSize(String tableName) throws Exception {
-        PreparedStatement stmt = conn.prepareStatement("select count(1) from " + tableName + " where 1=1;");
+        PreparedStatement stmt = conn.prepareStatement("select count(1) from " + tableName + ";");
 //        stmt.setString(1, tableName);
         ResultSet rs = stmt.executeQuery();
         if (rs.next()) {
@@ -68,10 +68,9 @@ public class Reader {
     }
 
     public ResultSet getTableData(String tableName) throws Exception {
-        PreparedStatement stmt = conn.prepareStatement("select * from " + tableName + " where 1=1;");
+        PreparedStatement stmt = conn.prepareStatement("select * from " + tableName + ";");
         stmt.setFetchSize(10000);
 //        stmt.setString(1, tableName);
-        ResultSet rs = stmt.executeQuery();
-        return rs;
+        return stmt.executeQuery();
     }
 }

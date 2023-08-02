@@ -16,13 +16,13 @@ public class Main {
         Reader dbReader = new Reader("jdbc:mysql://localhost:3306/transitnet?user=transitnet&password=transitnet");
         List<DbTable> tables = dbReader.getTables();
         log.info("MySQL Connected, {} tables loaded", tables.size());
-        Writer dbWriter = new Writer("HOST", 8529, "root", "123123");
+        Writer dbWriter = new Writer("localhost", 8529, "root", "123123");
         log.info("ArangoDB Connected.");
         for (DbTable table : tables) {
             int size = dbReader.getTableSize(table.name);
             log.info("Reading table {}, size is {}", table.name, size);
             ResultSet datas = dbReader.getTableData(table.name);
-            dbWriter.addCollection(table.name);
+            dbWriter.addCollection(table.name, true);
             int count = 0;
             double lastNotice = 0.0;
             while (datas.next()) {
@@ -31,9 +31,10 @@ public class Main {
                 count++;
                 double percentage = count * 100.0 / size;
                 if (percentage - lastNotice > 2) {
-                    log.info("Table {}, process {}%", table.name, String.format("%.1f", percentage));
+                    log.info("Table {}, process {}% ({}/{})", table.name, String.format("%.1f", percentage), count, size);
+                    lastNotice = percentage;
                 }
-                lastNotice = percentage;
+
             }
             log.warn("Table {} loaded!", table.name);
         }
