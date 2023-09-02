@@ -12,6 +12,7 @@ target/
 *.iml
 *.ipr
 
+src/py/nyc/datasets
 
 *.txt
 
