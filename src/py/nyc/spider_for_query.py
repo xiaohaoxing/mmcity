@@ -5,6 +5,10 @@ import os
 from bs4 import BeautifulSoup
 
 
+# target query keyword
+query = 'location'
+
+
 def spider_page(url, cache=True):
     name = url.split('/')[-1]
     splits = name.split('?')
@@ -50,7 +54,7 @@ def get_list(query_str):
 
 
 if __name__ == '__main__':
-    list = get_list('location')
+    list = get_list(query)
     with open('datasets.json', 'w') as f:
         f.write(json.dumps(list))
         f.close()
