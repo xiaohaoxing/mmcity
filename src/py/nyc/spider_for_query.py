@@ -5,17 +5,24 @@ import os
 from bs4 import BeautifulSoup
 
 
-def spider_page(url):
-    params = url.split('?')[1]
+def spider_page(url, cache=True):
+    name = url.split('/')[-1]
+    splits = name.split('?')
+    if len(splits) < 2:
+        params = name
+    else:
+        params = splits[1]
     file_name = params + '.txt'
-    if os.path.exists(file_name):
+    if cache and os.path.exists(file_name):
         with open(file_name) as f:
             return f.read()
     resp = requests.get(url)
     txt = resp.text
-    with open(file_name, 'w') as f:
-        f.write(txt)
-        f.close()
+    if cache:
+        with open(file_name, 'w') as f:
+            f.write(txt)
+            f.close()
+    return txt
 
 
 def exact_records(txt):
@@ -33,8 +40,10 @@ def get_list(query_str):
     has_next = True
     page_id = 1
     while has_next:
-        items = exact_records(spider_page(pre_url + page_id))
+        items = exact_records(spider_page(pre_url + str(page_id)))
+        print('Spider page %d, %d items' % (page_id, len(items)))
         result_list.extend(items)
+        page_id += 1
         if len(items) == 0:
             has_next = False
     return result_list
@@ -42,5 +51,7 @@ def get_list(query_str):
 
 if __name__ == '__main__':
     list = get_list('location')
-    with open('datasets', 'w') as f:
+    with open('datasets.json', 'w') as f:
         f.write(json.dumps(list))
+        f.close()
+    print('Save the datasets as datasets.json success!')
